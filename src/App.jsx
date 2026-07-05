@@ -688,13 +688,7 @@ function App() {
                 Позвонить сейчас
               </a>
 
-              <div className="analytics-note">
-                <span>📊</span>
-                <p>
-                  Счётчик подключён через Firebase Analytics: посещения,
-                  клики WhatsApp и звонки будут видны в Firebase Console.
-                </p>
-              </div>
+            
             </div>
           </div>
         </section>
