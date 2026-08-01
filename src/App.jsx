@@ -654,7 +654,7 @@ function App() {
                   <span>📍</span>
                   <div>
                     <strong>Адрес</strong>
-                    <p>Душанбе, Таджикистан</p>
+                    <p>Crowne Plaza Dushanbe by IHG, Душанбе</p>
                   </div>
                 </div>
               </div>
