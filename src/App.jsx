@@ -745,7 +745,7 @@ function App() {
               Позвонить
             </a>
 
-            <span className="footer-location">Душанбе, Таджикистан</span>
+            <span className="footer-location">Crowne Plaza Dushanbe by IHG, Душанбе</span>
           </div>
         </div>
 
