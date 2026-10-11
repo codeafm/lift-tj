@@ -1,150 +1,677 @@
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { trackEvent } from "./firebase";
+import { Icon, Logo, WhatsAppIcon } from "./Icon";
+import OrderForm from "./OrderForm";
+import {
+  ADDRESS,
+  MAP_EMBED_URL,
+  PHONE_RAW,
+  PHONE_TEXT,
+  WHATSAPP_URL,
+  advantages,
+  elevatorTypes,
+  faq,
+  navLinks,
+  processSteps,
+  projects,
+  services,
+  stats,
+} from "./data";
 
-const PHONE_RAW = "+992907762277";
-const PHONE_TEXT = "+992 907 76 22 77";
-const WHATSAPP_URL = "https://wa.me/992907762277";
+const trackPhone = (location) => trackEvent("phone_click", { location, phone: PHONE_TEXT });
+const trackWhatsapp = (location) => trackEvent("whatsapp_click", { location, phone: PHONE_TEXT });
 
-const services = [
-  {
-    title: "Продажа лифтов",
-    text: "Пассажирские, грузовые, панорамные и больничные лифты для жилых домов, бизнес-центров, гостиниц и коммерческих объектов в Таджикистане.",
-    icon: "🛗",
-  },
-  {
-    title: "Монтаж и установка",
-    text: "Профессиональная установка, настройка, тестирование и ввод в эксплуатацию с учетом требований объекта и строительных норм.",
-    icon: "🏗️",
-  },
-  {
-    title: "Сервисное обслуживание",
-    text: "Диагностика, техническое обслуживание, ремонт и модернизация лифтового оборудования для стабильной и безопасной работы.",
-    icon: "🛠️",
-  },
-  {
-    title: "Решения для новостроек",
-    text: "Комплексный подход для застройщиков и строительных компаний: от подбора модели до монтажа и дальнейшего сопровождения.",
-    icon: "🏢",
-  },
-];
+function useReveal() {
+  useEffect(() => {
+    const items = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((el) => el.classList.add("in"));
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+    );
+    items.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
 
-const elevatorTypes = [
-  {
-    name: "Пассажирские",
-    icon: "👥",
-    desc: "Комфортные и безопасные решения для жилых комплексов, офисов и новостроек.",
-    images: ["/images/lifts/passenger/1.jpg", "/images/lifts/passenger/2.jpg"],
-  },
-  {
-    name: "Грузовые",
-    icon: "📦",
-    desc: "Надежные лифты с высокой грузоподъемностью для складов, магазинов и коммерческих объектов.",
-    images: ["/images/lifts/freight/1.jpg", "/images/lifts/freight/2.jpg"],
-  },
-  {
-    name: "Панорамные",
-    icon: "🌆",
-    desc: "Эстетичные стеклянные решения для бизнес-центров, гостиниц и современных зданий.",
-    images: ["/images/lifts/panoramic/1.jpg", "/images/lifts/panoramic/2.jpg"],
-  },
-  {
-    name: "Больничные",
-    icon: "🏥",
-    desc: "Специализированные лифты для медицинских учреждений с акцентом на безопасность и удобство.",
-    images: ["/images/lifts/hospital/1.jpg", "/images/lifts/hospital/2.jpg"],
-  },
-];
+function SectionHead({ eyebrow, title, text, light = false }) {
+  return (
+    <div className={`section-head reveal ${light ? "on-dark" : ""}`}>
+      <span className="eyebrow">{eyebrow}</span>
+      <h2>{title}</h2>
+      {text && <p>{text}</p>}
+    </div>
+  );
+}
 
-const projects = [
-  {
-    title: "Жилой комплекс в Душанбе",
-    type: "Пассажирские лифты",
-    location: "Душанбе, Таджикистан",
-    images: [
-      "/images/projects/project1-1.jpg",
-      "/images/projects/project1-2.jpg",
-      "/images/projects/project1-3.jpg",
-      "/images/projects/project1-4.jpg",
-      "/images/projects/project1-5.jpg",
-      "/images/projects/project1-6.jpg",
-      "/images/projects/project1-7.jpg",
-    ],
-  },
-  {
-    title: "Бизнес-центр",
-    type: "Панорамный лифт",
-    location: "Душанбе, Таджикистан",
-    images: [
-      "/images/projects/project2-1.jpg",
-      "/images/projects/project2-2.jpg",
-      "/images/projects/project2-3.jpg",
-    ],
-  },
-  {
-    title: "Медицинский центр",
-    type: "Больничный лифт",
-    location: "Худжанд, Таджикистан",
-    images: [
-      "/images/projects/project3-1.jpg",
-      "/images/projects/project3-2.jpg",
-      "/images/projects/project3-3.jpg",
-    ],
-  },
-  {
-    title: "Торговый объект",
-    type: "Грузовой лифт",
-    location: "Бохтар, Таджикистан",
-    images: [
-      "/images/projects/project4-1.jpg",
-      "/images/projects/project4-2.jpg",
-      "/images/projects/project4-3.jpg",
-    ],
-  },
-];
+function Header() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 24);
 
-const advantages = [
-  "Работаем по Таджикистану с жилыми и коммерческими объектами",
-  "Подбираем лифтовое решение под конкретный проект",
-  "Выполняем монтаж под ключ",
-  "Обеспечиваем сервис и техническую поддержку",
-  "Используем современные и надежные комплектующие",
-  "Имеем опыт работы с новостройками, бизнес-центрами и медучреждениями",
-];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-const stats = [
-  { value: "6+", label: "лет опыта" },
-  { value: "120+", label: "реализованных объектов" },
-  { value: "24/7", label: "сервис и поддержка" },
-];
+  useEffect(() => {
+    document.body.classList.toggle("no-scroll", open);
+  }, [open]);
 
-const processSteps = [
-  {
-    number: "01",
-    title: "Консультация",
-    text: "Обсуждаем объект, этажность, назначение здания и требования к лифту.",
-  },
-  {
-    number: "02",
-    title: "Подбор решения",
-    text: "Подбираем тип лифта, характеристики, дизайн кабины и техническую комплектацию.",
-  },
-  {
-    number: "03",
-    title: "Монтаж",
-    text: "Выполняем установку, настройку, проверку и подготовку оборудования к работе.",
-  },
-  {
-    number: "04",
-    title: "Сервис",
-    text: "Обеспечиваем техническое обслуживание, диагностику и поддержку после запуска.",
-  },
-];
+  const close = () => setOpen(false);
+
+  return (
+    <header className={`header ${scrolled || open ? "solid" : ""}`}>
+      <div className="container nav">
+        <a href="#top" className="brand" onClick={close} aria-label="Lift TJ — на главную">
+          <Logo />
+          <span className="brand-text">
+            <strong>Lift TJ</strong>
+            <small>Лифты · монтаж · сервис</small>
+          </span>
+        </a>
+
+        <nav className={`menu ${open ? "open" : ""}`} aria-label="Основное меню">
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} onClick={close}>
+              {link.label}
+            </a>
+          ))}
+          <a className="menu-phone" href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("menu")}>
+            <Icon name="phone" size={18} /> {PHONE_TEXT}
+          </a>
+        </nav>
+
+        <div className="nav-actions">
+          <a className="nav-phone" href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("header")}>
+            <Icon name="phone" size={17} />
+            <span>{PHONE_TEXT}</span>
+          </a>
+          <a className="btn btn-primary btn-sm" href="#order" onClick={close}>
+            Заказать лифт
+          </a>
+          <button
+            type="button"
+            className={`burger ${open ? "active" : ""}`}
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Закрыть меню" : "Открыть меню"}
+            aria-expanded={open}
+          >
+            <span />
+            <span />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function FloorDisplay() {
+  const [{ floor, dir }, setState] = useState({ floor: 1, dir: 1 });
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setInterval(() => {
+      setState(({ floor, dir }) => {
+        const nextDir = floor + dir > 12 || floor + dir < 1 ? -dir : dir;
+        return { floor: floor + nextDir, dir: nextDir };
+      });
+    }, 1100);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="floor-display" aria-hidden="true">
+      <Icon name="up" size={16} strokeWidth={2.4} className={dir < 0 ? "down" : ""} />
+      <span key={floor}>{String(floor).padStart(2, "0")}</span>
+    </div>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="hero" id="top">
+      <div className="hero-bg" aria-hidden="true" />
+      <div className="container hero-grid">
+        <div className="hero-copy">
+          <span className="eyebrow reveal">
+            <i className="pulse" /> Работаем по всему Таджикистану
+          </span>
+          <h1 className="reveal">
+            Лифты для вашего здания <em>от проекта до запуска</em>
+          </h1>
+          <p className="hero-lead reveal">
+            Поставка, монтаж и сервис пассажирских, грузовых, панорамных и
+            больничных лифтов для жилых комплексов, бизнес-центров и клиник.
+          </p>
+          <div className="hero-actions reveal">
+            <a href="#order" className="btn btn-primary btn-lg">
+              Рассчитать стоимость <Icon name="arrow" size={20} />
+            </a>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-glass btn-lg"
+              onClick={() => trackWhatsapp("hero")}
+            >
+              <WhatsAppIcon size={20} /> Написать в WhatsApp
+            </a>
+          </div>
+          <ul className="hero-points reveal">
+            <li><Icon name="check" size={16} strokeWidth={2.4} /> Бесплатный выезд на замер</li>
+            <li><Icon name="check" size={16} strokeWidth={2.4} /> Цена фиксируется в договоре</li>
+            <li><Icon name="check" size={16} strokeWidth={2.4} /> Сервис 24/7</li>
+          </ul>
+        </div>
+
+        <div className="hero-visual reveal">
+          <div className="hero-frame">
+            <img
+              src="/images/projects/project1-6.jpg"
+              alt="Кабина пассажирского лифта Lift TJ с золотой отделкой"
+              fetchPriority="high"
+            />
+            <FloorDisplay />
+          </div>
+          <div className="hero-badge">
+            <strong>120+</strong>
+            <span>объектов сдано<br />под ключ</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="container">
+        <dl className="stats reveal">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <dt>{s.value}</dt>
+              <dd>{s.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function Catalog({ onOrder }) {
+  return (
+    <section className="section" id="catalog">
+      <div className="container">
+        <SectionHead
+          eyebrow="Каталог"
+          title="Лифты под любую задачу"
+          text="Подбираем модель, грузоподъёмность и отделку кабины под ваш объект. Ниже — типичные параметры, точную конфигурацию рассчитаем после замера."
+        />
+        <div className="catalog-grid">
+          {elevatorTypes.map((t, i) => (
+            <article className="lift-card reveal" key={t.id} style={{ "--d": `${i * 70}ms` }}>
+              <div className="lift-card-media">
+                <img src={t.image} alt={`${t.name} лифты`} loading="lazy" />
+                <span className="lift-card-index">0{i + 1}</span>
+              </div>
+              <div className="lift-card-body">
+                <h3>{t.name}</h3>
+                <p>{t.desc}</p>
+                <dl className="spec-list">
+                  {t.specs.map(([k, v]) => (
+                    <div key={k}>
+                      <dt>{k}</dt>
+                      <dd>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <button type="button" className="btn btn-dark btn-block" onClick={() => onOrder(t.id)}>
+                  Заказать {t.short.toLowerCase()} <Icon name="arrow" size={18} />
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Services() {
+  return (
+    <section className="section section-dark" id="services">
+      <div className="container">
+        <SectionHead
+          light
+          eyebrow="Услуги"
+          title="Полный цикл работ с лифтом"
+          text="Один подрядчик на всех этапах — от подбора оборудования до многолетнего обслуживания."
+        />
+        <div className="services-grid">
+          {services.map((s, i) => (
+            <article className="service-card reveal" key={s.title} style={{ "--d": `${i * 70}ms` }}>
+              <div className="service-icon">
+                <Icon name={s.icon} size={26} />
+              </div>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function OrderSection({ preset }) {
+  return (
+    <section className="section order-section" id="order">
+      <div className="container order-grid">
+        <div className="order-intro reveal">
+          <span className="eyebrow">Онлайн-заявка</span>
+          <h2>Закажите лифт за 3 шага</h2>
+          <p>
+            Укажите параметры объекта — инженер Lift TJ свяжется с вами,
+            уточнит детали и подготовит коммерческое предложение.
+          </p>
+          <ul className="order-benefits">
+            <li>
+              <span><Icon name="clock" size={20} /></span>
+              <div>
+                <strong>Быстрый ответ</strong>
+                Перезваниваем в рабочее время в день обращения
+              </div>
+            </li>
+            <li>
+              <span><Icon name="doc" size={20} /></span>
+              <div>
+                <strong>Подробный расчёт</strong>
+                Оборудование, монтаж и сроки — одним документом
+              </div>
+            </li>
+            <li>
+              <span><Icon name="shield" size={20} /></span>
+              <div>
+                <strong>Без обязательств</strong>
+                Консультация и расчёт бесплатны
+              </div>
+            </li>
+          </ul>
+          <div className="order-direct">
+            <span>Предпочитаете позвонить?</span>
+            <a href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("order")}>
+              {PHONE_TEXT}
+            </a>
+          </div>
+        </div>
+        <div className="reveal" style={{ "--d": "120ms" }}>
+          <OrderForm key={preset.nonce} initialType={preset.type} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Lightbox({ project, index, onClose, onIndex }) {
+  const count = project.images.length;
+  const go = useCallback((delta) => onIndex((index + delta + count) % count), [index, count, onIndex]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.classList.add("no-scroll");
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.classList.remove("no-scroll");
+    };
+  }, [go, onClose]);
+
+  return (
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={project.title} onClick={onClose}>
+      <div className="lightbox-inner" onClick={(e) => e.stopPropagation()}>
+        <img src={project.images[index]} alt={`${project.title} — фото ${index + 1}`} />
+        <div className="lightbox-bar">
+          <div>
+            <strong>{project.title}</strong>
+            <span>{project.type} · {project.location}</span>
+          </div>
+          <span className="lightbox-count">{index + 1} / {count}</span>
+        </div>
+        <button type="button" className="lb-btn lb-prev" onClick={() => go(-1)} aria-label="Предыдущее фото">
+          <Icon name="chevronLeft" />
+        </button>
+        <button type="button" className="lb-btn lb-next" onClick={() => go(1)} aria-label="Следующее фото">
+          <Icon name="chevronRight" />
+        </button>
+      </div>
+      <button type="button" className="lb-close" onClick={onClose} aria-label="Закрыть">
+        <Icon name="close" />
+      </button>
+    </div>
+  );
+}
+
+function Projects() {
+  const [viewer, setViewer] = useState(null);
+
+  const open = (p, i = 0) => {
+    setViewer({ p, i });
+    trackEvent("project_open", { project: projects[p].title });
+  };
+
+  return (
+    <section className="section" id="projects">
+      <div className="container">
+        <SectionHead
+          eyebrow="Наши объекты"
+          title="Лифты, которые уже работают"
+          text="Несколько объектов, где мы выполнили поставку и монтаж. Нажмите на фото, чтобы посмотреть галерею."
+        />
+        <div className="projects-grid">
+          {projects.map((project, p) => (
+            <article className={`project-card reveal ${p === 0 ? "featured" : ""}`} key={project.title}>
+              <button type="button" className="project-cover" onClick={() => open(p)}>
+                <img src={project.images[0]} alt={project.title} loading="lazy" />
+                <span className="project-zoom">
+                  <Icon name="expand" size={18} /> {project.images.length} фото
+                </span>
+                <span className="project-info">
+                  <small>{project.location}</small>
+                  <strong>{project.title}</strong>
+                  <span>{project.type}</span>
+                </span>
+              </button>
+              {p === 0 && (
+                <div className="project-thumbs">
+                  {project.images.slice(1, 5).map((img, i) => (
+                    <button type="button" key={img} onClick={() => open(p, i + 1)} aria-label={`Фото ${i + 2}`}>
+                      <img src={img} alt="" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+      {viewer && (
+        <Lightbox
+          project={projects[viewer.p]}
+          index={viewer.i}
+          onClose={() => setViewer(null)}
+          onIndex={(i) => setViewer((v) => ({ ...v, i }))}
+        />
+      )}
+    </section>
+  );
+}
+
+function Process() {
+  return (
+    <section className="section section-stone" id="process">
+      <div className="container">
+        <SectionHead
+          eyebrow="Как мы работаем"
+          title="От заявки до первого рейса"
+          text="Понятные этапы и фиксированные сроки — вы всегда знаете, что происходит на объекте."
+        />
+        <ol className="process">
+          {processSteps.map((s, i) => (
+            <li className="reveal" key={s.title} style={{ "--d": `${i * 80}ms` }}>
+              <span className="process-num">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function About() {
+  return (
+    <section className="section section-dark about" id="about">
+      <div className="container about-grid">
+        <div className="about-media reveal">
+          <img src="/images/projects/project2-2.jpg" alt="Панорамный лифт бизнес-центра в Душанбе" loading="lazy" />
+          <div className="about-years">
+            <strong>6+</strong>
+            <span>лет опыта</span>
+          </div>
+        </div>
+        <div>
+          <SectionHead
+            light
+            eyebrow="Почему Lift TJ"
+            title="Надёжность, за которую отвечаем мы"
+            text="Работаем с застройщиками, управляющими компаниями, владельцами бизнеса и медучреждениями по всему Таджикистану."
+          />
+          <div className="adv-grid">
+            {advantages.map((a, i) => (
+              <div className="adv reveal" key={a.title} style={{ "--d": `${i * 70}ms` }}>
+                <Icon name={a.icon} size={24} />
+                <h3>{a.title}</h3>
+                <p>{a.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  const [openIndex, setOpenIndex] = useState(0);
+  return (
+    <section className="section" id="faq">
+      <div className="container faq-grid">
+        <div className="faq-side">
+          <SectionHead
+            eyebrow="Вопросы и ответы"
+            title="Частые вопросы"
+            text="Не нашли ответ? Напишите нам — проконсультируем бесплатно."
+          />
+          <a
+            className="btn btn-dark reveal"
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackWhatsapp("faq")}
+          >
+            <WhatsAppIcon size={20} /> Задать вопрос
+          </a>
+        </div>
+        <div className="faq-list">
+          {faq.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div className="reveal" key={item.q}>
+              <div className={`faq-item ${isOpen ? "open" : ""}`}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-${i}`}
+                  onClick={() => setOpenIndex(isOpen ? -1 : i)}
+                >
+                  <span>{item.q}</span>
+                  <i><Icon name="plus" size={18} /></i>
+                </button>
+                <div className="faq-answer" id={`faq-${i}`} role="region">
+                  <div>
+                    <p>{item.a}</p>
+                  </div>
+                </div>
+              </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
+  return (
+    <section className="section section-stone" id="contact">
+      <div className="container contact-grid">
+        <div className="contact-info">
+          <SectionHead
+            eyebrow="Контакты"
+            title="Свяжитесь с нами"
+            text="Ответим на вопросы, приедем на замер и подготовим расчёт для вашего объекта."
+          />
+          <div className="contact-list reveal">
+            <a href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("contact")}>
+              <span className="contact-ic"><Icon name="phone" size={20} /></span>
+              <div>
+                <small>Телефон</small>
+                <strong>{PHONE_TEXT}</strong>
+              </div>
+            </a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsapp("contact")}>
+              <span className="contact-ic wa"><WhatsAppIcon size={20} /></span>
+              <div>
+                <small>WhatsApp</small>
+                <strong>{PHONE_TEXT}</strong>
+              </div>
+            </a>
+            <div>
+              <span className="contact-ic"><Icon name="pin" size={20} /></span>
+              <div>
+                <small>Офис</small>
+                <strong>{ADDRESS}</strong>
+              </div>
+            </div>
+            <div>
+              <span className="contact-ic"><Icon name="clock" size={20} /></span>
+              <div>
+                <small>Аварийная служба</small>
+                <strong>Круглосуточно, без выходных</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="map reveal">
+          <iframe
+            title="Lift TJ на карте"
+            src={MAP_EMBED_URL}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CtaBand() {
+  return (
+    <section className="cta-band">
+      <div className="container cta-inner reveal">
+        <div>
+          <h2>Готовы обсудить ваш объект?</h2>
+          <p>Оставьте заявку — расчёт стоимости и консультация бесплатно.</p>
+        </div>
+        <div className="cta-actions">
+          <a href="#order" className="btn btn-dark btn-lg">
+            Оставить заявку <Icon name="arrow" size={20} />
+          </a>
+          <a href={`tel:${PHONE_RAW}`} className="btn btn-outline-dark btn-lg" onClick={() => trackPhone("cta")}>
+            <Icon name="phone" size={18} /> Позвонить
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="container footer-grid">
+        <div className="footer-about">
+          <a href="#top" className="brand">
+            <Logo />
+            <span className="brand-text">
+              <strong>Lift TJ</strong>
+              <small>Лифты · монтаж · сервис</small>
+            </span>
+          </a>
+          <p>
+            Поставка, монтаж и сервисное обслуживание лифтов для жилых и
+            коммерческих объектов по всему Таджикистану.
+          </p>
+        </div>
+        <div>
+          <h4>Лифты</h4>
+          {elevatorTypes.map((t) => (
+            <a key={t.id} href="#catalog">{t.name}</a>
+          ))}
+        </div>
+        <div>
+          <h4>Компания</h4>
+          {navLinks.slice(1).map((l) => (
+            <a key={l.href} href={l.href}>{l.label}</a>
+          ))}
+        </div>
+        <div>
+          <h4>Связь</h4>
+          <a href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("footer")}>{PHONE_TEXT}</a>
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsapp("footer")}>
+            WhatsApp
+          </a>
+          <span>{ADDRESS}</span>
+        </div>
+      </div>
+      <div className="container footer-bottom">
+        <span>© {new Date().getFullYear()} Lift TJ. Все права защищены.</span>
+        <a href="#top">Наверх ↑</a>
+      </div>
+    </footer>
+  );
+}
+
+function MobileBar() {
+  return (
+    <div className="mobile-bar">
+      <a href={`tel:${PHONE_RAW}`} onClick={() => trackPhone("mobile_bar")} aria-label="Позвонить">
+        <Icon name="phone" size={20} />
+      </a>
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="wa"
+        onClick={() => trackWhatsapp("mobile_bar")}
+        aria-label="WhatsApp"
+      >
+        <WhatsAppIcon size={22} />
+      </a>
+      <a href="#order" className="mobile-bar-cta">
+        Заказать лифт
+      </a>
+    </div>
+  );
+}
 
 function App() {
-  const [projectSlides, setProjectSlides] = useState(projects.map(() => 0));
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [heroFloor, setHeroFloor] = useState(1);
+  const [preset, setPreset] = useState({ type: "", nonce: 0 });
+  useReveal();
 
   useEffect(() => {
     trackEvent("page_view", {
@@ -154,618 +681,31 @@ function App() {
     });
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProjectSlides((prev) =>
-        prev.map((value, index) => (value + 1) % projects[index].images.length)
-      );
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const floorTimer = setInterval(() => {
-      setHeroFloor((prev) => (prev >= 5 ? 1 : prev + 1));
-    }, 2600);
-
-    return () => clearInterval(floorTimer);
-  }, []);
-
-  const closeMenu = () => setMenuOpen(false);
-
-  const handleWhatsappClick = (location) => {
-    trackEvent("whatsapp_click", {
-      location,
-      phone: PHONE_TEXT,
-    });
-  };
-
-  const handlePhoneClick = (location) => {
-    trackEvent("phone_click", {
-      location,
-      phone: PHONE_TEXT,
-    });
-  };
-
-  const nextProjectSlide = (projectIndex) => {
-    setProjectSlides((prev) =>
-      prev.map((value, index) =>
-        index === projectIndex
-          ? (value + 1) % projects[projectIndex].images.length
-          : value
-      )
-    );
-
-    trackEvent("project_slider_next", {
-      project: projects[projectIndex].title,
-    });
-  };
-
-  const prevProjectSlide = (projectIndex) => {
-    setProjectSlides((prev) =>
-      prev.map((value, index) =>
-        index === projectIndex
-          ? (value - 1 + projects[projectIndex].images.length) %
-            projects[projectIndex].images.length
-          : value
-      )
-    );
-
-    trackEvent("project_slider_prev", {
-      project: projects[projectIndex].title,
-    });
-  };
-
-  const setProjectSlide = (projectIndex, slideIndex) => {
-    setProjectSlides((prev) =>
-      prev.map((value, index) => (index === projectIndex ? slideIndex : value))
-    );
-
-    trackEvent("project_slide_select", {
-      project: projects[projectIndex].title,
-      slide: slideIndex + 1,
-    });
+  const orderType = (type) => {
+    setPreset((prev) => ({ type, nonce: prev.nonce + 1 }));
+    trackEvent("catalog_order_click", { lift_type: type });
+    requestAnimationFrame(() => document.getElementById("order")?.scrollIntoView({ behavior: "smooth" }));
   };
 
   return (
-    <div className="site">
-      <div className="bg-glow bg-glow-1"></div>
-      <div className="bg-glow bg-glow-2"></div>
-      <div className="bg-grid"></div>
-
-      <header className="header">
-        <div className="container nav">
-          <a href="#top" className="brand" onClick={closeMenu}>
-            <div className="brand-mark">
-              <span>LT</span>
-            </div>
-            <div className="brand-text">
-              <strong>Lift TJ</strong>
-              <span>Лифты, монтаж и сервис</span>
-            </div>
-          </a>
-
-          <nav className={`menu ${menuOpen ? "open" : ""}`}>
-            <a href="#services" onClick={closeMenu}>Услуги</a>
-            <a href="#catalog" onClick={closeMenu}>Лифты</a>
-            <a href="#projects" onClick={closeMenu}>Работы</a>
-            <a href="#process" onClick={closeMenu}>Этапы</a>
-            <a href="#about" onClick={closeMenu}>О нас</a>
-            <a href="#contact" onClick={closeMenu}>Контакты</a>
-          </nav>
-
-          <div className="nav-actions">
-            <a
-              href={`tel:${PHONE_RAW}`}
-              className="header-phone"
-              onClick={() => handlePhoneClick("header")}
-            >
-              Позвонить
-            </a>
-
-            <button
-              className={`menu-toggle ${menuOpen ? "active" : ""}`}
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label="Открыть меню"
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main id="top">
-        <section className="hero">
-          <div className="container hero-grid">
-            <div className="hero-copy">
-              <div className="eyebrow">
-                <span className="eyebrow-dot"></span>
-                Lift TJ • Работаем по всему Таджикистану
-              </div>
-
-              <h1>
-                Современные лифты <span>для объектов в Таджикистане</span>
-              </h1>
-
-              <p>
-                Продажа, установка, модернизация и сервис лифтов для новостроек,
-                жилых комплексов, бизнес-центров, медицинских учреждений и
-                коммерческих объектов.
-              </p>
-
-              <div className="hero-actions">
-                <a
-                  href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary"
-                  onClick={() => handleWhatsappClick("hero")}
-                >
-                  <span>Заявка в WhatsApp</span>
-                  <b>→</b>
-                </a>
-
-                <a
-                  href={`tel:${PHONE_RAW}`}
-                  className="btn btn-secondary"
-                  onClick={() => handlePhoneClick("hero")}
-                >
-                  Позвонить
-                </a>
-              </div>
-
-              <div className="hero-note">
-                <span>📍 Душанбе • Худжанд • Бохтар • объекты по всему Таджикистану</span>
-              </div>
-
-              <div className="stats">
-                {stats.map((item) => (
-                  <div className="stat" key={item.label}>
-                    <strong>{item.value}</strong>
-                    <span>{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="hero-visual">
-              <div className="hero-premium-card">
-                <div className="premium-status">
-                  <span className="status-dot"></span>
-                  Premium Lift System
-                </div>
-
-                <div className="lift-3d-scene">
-                  <div className="lift-building">
-                    <div className="lift-top-panel">
-                      <span>Lift TJ</span>
-                      <span className="lift-floor-display">0{heroFloor}</span>
-                    </div>
-
-                    <div className="lift-shaft-3d">
-                      <div className={`lift-cabin-3d floor-${heroFloor}`}>
-                        <div className="lift-door left"></div>
-                        <div className="lift-door right"></div>
-                        <div className="lift-cabin-inner">
-                          <div className="lift-light"></div>
-                          <div className="lift-panel-mini">
-                            <span>{heroFloor}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="shaft-line shaft-line-left"></div>
-                      <div className="shaft-line shaft-line-right"></div>
-
-                      <div className="lift-floor-markers">
-                        <span>05</span>
-                        <span>04</span>
-                        <span>03</span>
-                        <span>02</span>
-                        <span>01</span>
-                      </div>
-                    </div>
-
-                    <div className="lift-info-row">
-                      <div className="lift-info-chip">Modern</div>
-                      <div className="lift-info-chip">Premium</div>
-                      <div className="lift-info-chip">Safe</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="floating-card card-top">
-                <strong>24/7</strong>
-                <span>Сервисная поддержка</span>
-              </div>
-
-              <div className="floating-card card-bottom">
-                <strong>120+</strong>
-                <span>Объектов выполнено</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="premium-strip">
-          <div className="container premium-strip-grid">
-            <div>
-              <span>01</span>
-              <strong>Подбор под объект</strong>
-            </div>
-            <div>
-              <span>02</span>
-              <strong>Монтаж под ключ</strong>
-            </div>
-            <div>
-              <span>03</span>
-              <strong>Сервис и ремонт</strong>
-            </div>
-            <div>
-              <span>04</span>
-              <strong>Работа по Таджикистану</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="section" id="services">
-          <div className="container">
-            <div className="section-head">
-              <div className="eyebrow">Наши услуги</div>
-              <h2>Лифтовые решения для современных зданий</h2>
-              <p>
-                Мы работаем с застройщиками, владельцами коммерческих объектов,
-                жилыми комплексами и медицинскими учреждениями по всему Таджикистану.
-              </p>
-            </div>
-
-            <div className="services-grid">
-              {services.map((item) => (
-                <article className="service-card" key={item.title}>
-                  <div className="service-icon">{item.icon}</div>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section section-dark" id="catalog">
-          <div className="container">
-            <div className="section-head">
-              <div className="eyebrow">Категории лифтов</div>
-              <h2>Какие лифты мы предлагаем</h2>
-              <p>
-                Подбираем подходящий тип лифта под жилой, коммерческий или
-                специализированный объект.
-              </p>
-            </div>
-
-            <div className="catalog-grid">
-              {elevatorTypes.map((item) => (
-                <article className="catalog-card" key={item.name}>
-                  <div className="catalog-top">
-                    <div className="catalog-icon">{item.icon}</div>
-                    <div>
-                      <h3>{item.name}</h3>
-                      <p>{item.desc}</p>
-                    </div>
-                  </div>
-
-                  <div className="catalog-gallery">
-                    {item.images.map((img, index) => (
-                      <div className="catalog-image-box" key={index}>
-                        <img src={img} alt={`${item.name} ${index + 1}`} />
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section" id="projects">
-          <div className="container">
-            <div className="section-head">
-              <div className="eyebrow">Наши работы</div>
-              <h2>Установленные лифты в Таджикистане</h2>
-              <p>
-                Примеры объектов, где мы выполнили поставку и установку
-                лифтового оборудования.
-              </p>
-            </div>
-
-            <div className="projects-grid">
-              {projects.map((project, projectIndex) => (
-                <article className="project-card" key={project.title}>
-                  <div className="project-slider">
-                    <img
-                      src={project.images[projectSlides[projectIndex]]}
-                      alt={project.title}
-                      className="project-main-image"
-                    />
-
-                    <div className="project-badge project-type">
-                      {project.type}
-                    </div>
-
-                    <div className="project-badge project-location">
-                      {project.location}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="project-arrow left"
-                      onClick={() => prevProjectSlide(projectIndex)}
-                      aria-label="Предыдущее фото"
-                    >
-                      ‹
-                    </button>
-
-                    <button
-                      type="button"
-                      className="project-arrow right"
-                      onClick={() => nextProjectSlide(projectIndex)}
-                      aria-label="Следующее фото"
-                    >
-                      ›
-                    </button>
-                  </div>
-
-                  <div className="project-body">
-                    <h3>{project.title}</h3>
-                    <p>{project.type}</p>
-
-                    <div className="project-dots">
-                      {project.images.map((_, dotIndex) => (
-                        <button
-                          type="button"
-                          key={dotIndex}
-                          className={`project-dot ${
-                            projectSlides[projectIndex] === dotIndex ? "active" : ""
-                          }`}
-                          onClick={() => setProjectSlide(projectIndex, dotIndex)}
-                          aria-label={`Фото ${dotIndex + 1}`}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="project-thumbs">
-                      {project.images.map((img, thumbIndex) => (
-                        <button
-                          type="button"
-                          key={thumbIndex}
-                          className={`project-thumb ${
-                            projectSlides[projectIndex] === thumbIndex ? "active" : ""
-                          }`}
-                          onClick={() => setProjectSlide(projectIndex, thumbIndex)}
-                        >
-                          <img
-                            src={img}
-                            alt={`${project.title} ${thumbIndex + 1}`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section process-section" id="process">
-          <div className="container">
-            <div className="section-head">
-              <div className="eyebrow">Этапы работы</div>
-              <h2>От консультации до запуска лифта</h2>
-              <p>
-                Работаем понятно и поэтапно, чтобы заказчик заранее понимал
-                сроки, решение и дальнейшее обслуживание.
-              </p>
-            </div>
-
-            <div className="process-grid">
-              {processSteps.map((step) => (
-                <article className="process-card" key={step.number}>
-                  <span>{step.number}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section section-dark" id="about">
-          <div className="container about-grid">
-            <div className="about-copy">
-              <div className="eyebrow">О компании</div>
-              <h2>Lift TJ — лифтовая компания в Таджикистане</h2>
-              <p>
-                Мы предлагаем профессиональные решения для жилых комплексов,
-                новостроек, бизнес-центров, медицинских учреждений и других объектов.
-              </p>
-
-              <div className="experience-box">
-                <strong>6+</strong>
-                <span>лет работы по Таджикистану</span>
-              </div>
-            </div>
-
-            <div className="advantages-list">
-              {advantages.map((item) => (
-                <div className="advantage-item" key={item}>
-                  <span className="advantage-check">✓</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section" id="contact">
-          <div className="container contact-grid">
-            <div className="contact-info">
-              <div className="eyebrow">Контакты</div>
-              <h2>Свяжитесь с нами</h2>
-              <p>
-                Самый быстрый способ оставить заявку — написать нам в WhatsApp
-                или сразу позвонить.
-              </p>
-
-              <div className="contact-cards">
-                <div className="contact-card">
-                  <span>🟢</span>
-                  <div>
-                    <strong>WhatsApp</strong>
-                    <a
-                      href={WHATSAPP_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => handleWhatsappClick("contact_card")}
-                    >
-                      {PHONE_TEXT}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="contact-card">
-                  <span>📞</span>
-                  <div>
-                    <strong>Звонок</strong>
-                    <a
-                      href={`tel:${PHONE_RAW}`}
-                      onClick={() => handlePhoneClick("contact_card")}
-                    >
-                      {PHONE_TEXT}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="contact-card">
-                  <span>📍</span>
-                  <div>
-                    <strong>Адрес</strong>
-                    <p>Crowne Plaza Dushanbe by IHG, Душанбе</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="contact-form contact-actions-box">
-              <div className="contact-form-glow"></div>
-
-              <h3>Оставить заявку</h3>
-
-              <p className="contact-actions-text">
-                Выберите удобный способ связи. Мы быстро ответим и подскажем,
-                какой лифт подходит для вашего объекта.
-              </p>
-
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary full"
-                onClick={() => handleWhatsappClick("contact_button")}
-              >
-                Написать в WhatsApp
-              </a>
-
-              <a
-                href={`tel:${PHONE_RAW}`}
-                className="btn btn-secondary full"
-                onClick={() => handlePhoneClick("contact_button")}
-              >
-                Позвонить сейчас
-              </a>
-
-            
-            </div>
-          </div>
-        </section>
+    <>
+      <a className="skip-link" href="#order">Перейти к заявке</a>
+      <Header />
+      <main>
+        <Hero />
+        <Catalog onOrder={orderType} />
+        <Services />
+        <OrderSection preset={preset} />
+        <Projects />
+        <Process />
+        <About />
+        <Faq />
+        <CtaBand />
+        <Contact />
       </main>
-
-      <footer className="footer">
-        <div className="container footer-grid">
-          <div>
-            <div className="footer-brand">
-              <div className="brand-mark">
-                <span>LT</span>
-              </div>
-              <div className="brand-text">
-                <strong>Lift TJ</strong>
-                <span>Лифты, монтаж и сервис в Таджикистане</span>
-              </div>
-            </div>
-
-            <p className="footer-muted">
-              Поставка, установка и сервисное обслуживание лифтов для жилых и
-              коммерческих объектов по Таджикистану.
-            </p>
-          </div>
-
-          <div>
-            <h4>Услуги</h4>
-            <a href="#services">Продажа лифтов</a>
-            <a href="#services">Монтаж</a>
-            <a href="#services">Сервис</a>
-          </div>
-
-          <div>
-            <h4>Навигация</h4>
-            <a href="#catalog">Типы лифтов</a>
-            <a href="#projects">Наши работы</a>
-            <a href="#about">О компании</a>
-          </div>
-
-          <div>
-            <h4>Связь</h4>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => handleWhatsappClick("footer")}
-            >
-              WhatsApp
-            </a>
-
-            <a
-              href={`tel:${PHONE_RAW}`}
-              onClick={() => handlePhoneClick("footer")}
-            >
-              Позвонить
-            </a>
-
-            <span className="footer-location">Crowne Plaza Dushanbe by IHG, Душанбе</span>
-          </div>
-        </div>
-
-        <div className="container footer-bottom">
-          <p>© 2026 Lift TJ. Все права защищены.</p>
-          <p>Premium elevator solutions in Tajikistan</p>
-        </div>
-      </footer>
-
-      <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-float"
-        onClick={() => handleWhatsappClick("floating_button")}
-      >
-        <span>💬</span>
-        <span>WhatsApp</span>
-      </a>
-    </div>
+      <Footer />
+      <MobileBar />
+    </>
   );
 }
 
