@@ -1,243 +1,74 @@
+// Language-independent data. All text lives in translations.js.
+
 export const PHONE_RAW = "+992907762277";
 export const PHONE_TEXT = "+992 907 76 22 77";
 export const WHATSAPP_NUMBER = "992907762277";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
-export const ADDRESS = "Crowne Plaza Dushanbe by IHG, Душанбе";
-export const MAP_EMBED_URL =
-  "https://www.google.com/maps?q=Crowne+Plaza+Dushanbe&output=embed";
+export const MAP_EMBED_URL = "https://www.google.com/maps?q=Crowne+Plaza+Dushanbe&output=embed";
 
-export const navLinks = [
-  { href: "#catalog", label: "Лифты" },
-  { href: "#services", label: "Услуги" },
-  { href: "#projects", label: "Объекты" },
-  { href: "#process", label: "Этапы" },
-  { href: "#faq", label: "Вопросы" },
-  { href: "#contact", label: "Контакты" },
-];
+// Order of sections on the page; drives the menu and the elevator-shaft navigation.
+export const navSections = ["catalog", "configurator", "services", "projects", "process", "faq", "contact"];
 
-export const stats = [
-  { value: "6+", label: "лет на рынке Таджикистана" },
-  { value: "120+", label: "объектов сдано под ключ" },
-  { value: "24/7", label: "аварийная служба и сервис" },
-  { value: "4", label: "типа лифтов в линейке" },
-];
+export const statValues = ["6+", "120+", "24/7", "4"];
 
 export const elevatorTypes = [
   {
     id: "passenger",
-    name: "Пассажирские",
-    short: "Пассажирский",
-    desc: "Тихие и плавные лифты для жилых комплексов, офисов и новостроек. Отделка кабины — от нержавеющей стали до зеркала и золота.",
     image: "/images/lifts/passenger/2.jpg",
-    gallery: ["/images/lifts/passenger/2.jpg", "/images/lifts/passenger/1.jpg"],
-    specs: [
-      ["Грузоподъёмность", "400–1600 кг"],
-      ["Скорость", "1,0–2,5 м/с"],
-      ["Остановок", "до 40"],
-    ],
-    capacities: ["400 кг", "630 кг", "800 кг", "1000 кг", "1275 кг", "1600 кг"],
+    capacities: [400, 630, 800, 1000, 1275, 1600],
   },
   {
     id: "freight",
-    name: "Грузовые",
-    short: "Грузовой",
-    desc: "Усиленная кабина и двери для складов, магазинов, производств и ресторанов. Рассчитаны на интенсивную ежедневную работу.",
     image: "/images/lifts/freight/2.jpg",
-    gallery: ["/images/lifts/freight/2.jpg", "/images/lifts/freight/1.jpg"],
-    specs: [
-      ["Грузоподъёмность", "500–5000 кг"],
-      ["Скорость", "0,5–1,0 м/с"],
-      ["Двери", "телескопические"],
-    ],
-    capacities: ["500 кг", "1000 кг", "2000 кг", "3000 кг", "5000 кг"],
+    capacities: [500, 1000, 2000, 3000, 5000],
   },
   {
     id: "panoramic",
-    name: "Панорамные",
-    short: "Панорамный",
-    desc: "Стеклянные кабины для бизнес-центров, гостиниц и торговых галерей. Становятся архитектурным акцентом здания.",
     image: "/images/lifts/panoramic/1.jpg",
-    gallery: ["/images/lifts/panoramic/1.jpg", "/images/lifts/panoramic/2.jpg"],
-    specs: [
-      ["Грузоподъёмность", "630–1600 кг"],
-      ["Скорость", "1,0–1,75 м/с"],
-      ["Кабина", "закалённое стекло"],
-    ],
-    capacities: ["630 кг", "800 кг", "1000 кг", "1350 кг", "1600 кг"],
+    capacities: [630, 800, 1000, 1350, 1600],
   },
   {
     id: "hospital",
-    name: "Больничные",
-    short: "Больничный",
-    desc: "Глубокая кабина под каталку и кровать, точная остановка и мягкий старт для клиник и медицинских центров.",
     image: "/images/lifts/hospital/2.jpg",
-    gallery: ["/images/lifts/hospital/2.jpg", "/images/lifts/hospital/1.jpg"],
-    specs: [
-      ["Грузоподъёмность", "1275–2500 кг"],
-      ["Кабина", "под кровать и каталку"],
-      ["Режим", "приоритетный вызов"],
-    ],
-    capacities: ["1275 кг", "1600 кг", "2000 кг", "2500 кг"],
+    capacities: [1275, 1600, 2000, 2500],
   },
 ];
 
-export const services = [
-  {
-    icon: "lift",
-    title: "Поставка лифтов",
-    text: "Подбираем модель под этажность, поток людей и бюджет. Поставляем оборудование с документацией и гарантией.",
-  },
-  {
-    icon: "build",
-    title: "Монтаж под ключ",
-    text: "Собственная бригада: монтаж, пусконаладка, испытания и сдача лифта в эксплуатацию.",
-  },
-  {
-    icon: "wrench",
-    title: "Сервис и ремонт",
-    text: "Плановое техобслуживание, диагностика и аварийный выезд. Договор на обслуживание с фиксированной ценой.",
-  },
-  {
-    icon: "refresh",
-    title: "Модернизация",
-    text: "Замена старых лифтов и отдельных узлов: лебёдки, станции управления, дверей и отделки кабины.",
-  },
+export const serviceIcons = ["lift", "build", "wrench", "refresh"];
+export const advantageIcons = ["shield", "doc", "team", "clock"];
+
+export const projectImages = [
+  [
+    "/images/projects/project1-7.jpg",
+    "/images/projects/project1-5.jpg",
+    "/images/projects/project1-8.jpg",
+    "/images/projects/project1-4.jpg",
+    "/images/projects/project1-6.jpg",
+    "/images/projects/project1-2.jpg",
+    "/images/projects/project1-3.jpg",
+    "/images/projects/project1-1.jpg",
+  ],
+  ["/images/projects/project2-1.jpg", "/images/projects/project2-2.jpg", "/images/projects/project2-3.jpg"],
+  ["/images/projects/project3-1.jpg", "/images/projects/project3-2.jpg", "/images/projects/project3-3.jpg"],
+  ["/images/projects/project4-1.jpg", "/images/projects/project4-2.jpg", "/images/projects/project4-3.jpg"],
 ];
 
-export const projects = [
-  {
-    title: "Жилой комплекс",
-    type: "Пассажирские лифты",
-    location: "Душанбе",
-    images: [
-      "/images/projects/project1-7.jpg",
-      "/images/projects/project1-5.jpg",
-      "/images/projects/project1-8.jpg",
-      "/images/projects/project1-4.jpg",
-      "/images/projects/project1-6.jpg",
-      "/images/projects/project1-2.jpg",
-      "/images/projects/project1-3.jpg",
-      "/images/projects/project1-1.jpg",
-    ],
-  },
-  {
-    title: "Бизнес-центр",
-    type: "Панорамный лифт",
-    location: "Душанбе",
-    images: [
-      "/images/projects/project2-1.jpg",
-      "/images/projects/project2-2.jpg",
-      "/images/projects/project2-3.jpg",
-    ],
-  },
-  {
-    title: "Медицинский центр",
-    type: "Больничный лифт",
-    location: "Худжанд",
-    images: [
-      "/images/projects/project3-1.jpg",
-      "/images/projects/project3-2.jpg",
-      "/images/projects/project3-3.jpg",
-    ],
-  },
-  {
-    title: "Торговый объект",
-    type: "Грузовой лифт",
-    location: "Бохтар",
-    images: [
-      "/images/projects/project4-1.jpg",
-      "/images/projects/project4-2.jpg",
-      "/images/projects/project4-3.jpg",
-    ],
-  },
-];
+export const cabinOptions = {
+  walls: ["steel", "gold", "mirror", "wood"],
+  floor: ["marble", "granite", "medallion"],
+  light: ["warm", "cool", "stars"],
+};
 
-export const processSteps = [
-  {
-    title: "Заявка и консультация",
-    text: "Вы оставляете заявку — инженер перезванивает, уточняет объект, этажность и задачи.",
-  },
-  {
-    title: "Замер и подбор",
-    text: "Выезжаем на объект, снимаем размеры шахты и подбираем модель, отделку и комплектацию.",
-  },
-  {
-    title: "Договор и поставка",
-    text: "Фиксируем цену и сроки в договоре, поставляем оборудование на объект.",
-  },
-  {
-    title: "Монтаж и запуск",
-    text: "Монтируем, проводим пусконаладку и испытания, сдаём лифт в эксплуатацию.",
-  },
-  {
-    title: "Сервис",
-    text: "Берём лифт на обслуживание: плановые осмотры и аварийный выезд 24/7.",
-  },
-];
-
-export const advantages = [
-  {
-    icon: "shield",
-    title: "Безопасность прежде всего",
-    text: "Ловители, ограничитель скорости, датчики дверей и аварийное освещение в базовой комплектации.",
-  },
-  {
-    icon: "doc",
-    title: "Прозрачный договор",
-    text: "Цена, сроки и состав работ фиксируются письменно до начала монтажа.",
-  },
-  {
-    icon: "team",
-    title: "Своя монтажная бригада",
-    text: "Без субподрядчиков — отвечаем за качество каждого этапа.",
-  },
-  {
-    icon: "clock",
-    title: "Сервис 24/7",
-    text: "Аварийная служба на связи круглосуточно, плановое ТО по графику.",
-  },
-];
-
-export const buildingTypes = [
-  "Жилой дом / ЖК",
-  "Бизнес-центр / офис",
-  "Гостиница",
-  "Медицинское учреждение",
-  "Магазин / склад",
-  "Частный дом",
-];
-
-export const serviceKinds = [
-  "Новый лифт под ключ",
-  "Замена / модернизация",
-  "Сервис и ремонт",
-];
-
-export const cities = ["Душанбе", "Худжанд", "Бохтар", "Куляб", "Истаравшан", "Другой город"];
-
-export const faq = [
-  {
-    q: "Сколько стоит лифт?",
-    a: "Цена зависит от типа лифта, грузоподъёмности, количества остановок и отделки кабины. Оставьте заявку с параметрами объекта — подготовим расчёт в течение рабочего дня.",
-  },
-  {
-    q: "Сколько времени занимает установка?",
-    a: "После поставки оборудования монтаж одного лифта в готовую шахту обычно занимает несколько недель. Точный график фиксируем в договоре после замера.",
-  },
-  {
-    q: "Выезжаете ли вы за пределы Душанбе?",
-    a: "Да. Работаем по всему Таджикистану — Худжанд, Бохтар, Куляб и другие города. Выезд на замер согласуем при заявке.",
-  },
-  {
-    q: "Можно ли заменить старый лифт в существующем доме?",
-    a: "Да, выполняем демонтаж старого оборудования и модернизацию с подбором лифта под размеры существующей шахты.",
-  },
-  {
-    q: "Обслуживаете ли вы лифты после установки?",
-    a: "Да. Заключаем договор на техническое обслуживание: плановые осмотры, ремонт и аварийный выезд 24/7.",
-  },
-  {
-    q: "Какие документы нужны для заказа?",
-    a: "Для расчёта достаточно описания объекта или проекта здания. Остальное — техническое задание, замеры и документы для сдачи — готовим вместе с вами.",
-  },
-];
+// Swatch colors for the configurator option buttons.
+export const swatches = {
+  steel: "linear-gradient(135deg,#eef0f2,#9aa1a9 55%,#d8dce0)",
+  gold: "linear-gradient(135deg,#f6e3b4,#c79a4b 55%,#f1d79c)",
+  mirror: "linear-gradient(135deg,#5b6470,#1d2229 55%,#8a95a3)",
+  wood: "linear-gradient(135deg,#a8774a,#6b4528 55%,#93633b)",
+  marble: "linear-gradient(135deg,#ffffff,#e4e1dc 60%,#f7f5f1)",
+  granite: "radial-gradient(circle at 30% 30%,#3a3d42,#121315 70%)",
+  medallion: "radial-gradient(circle,#1d1f22 0 18%,#f3efe8 19% 32%,#1d1f22 33% 38%,#f3efe8 39%)",
+  warm: "radial-gradient(circle,#fff3d6,#f2b866 70%)",
+  cool: "radial-gradient(circle,#ffffff,#a9cdf5 70%)",
+  stars: "radial-gradient(circle at 30% 35%,#fff 0 6%,transparent 7%),radial-gradient(circle at 70% 60%,#fff 0 5%,transparent 6%),radial-gradient(circle at 45% 75%,#fff 0 4%,transparent 5%),#1b2433",
+};
